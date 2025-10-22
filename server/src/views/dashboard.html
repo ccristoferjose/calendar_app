@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Dashboard</title>
+</head>
+<body>
+    <h1>Calendar Dashboard</h1>
+    <button onclick="listEvents()">List Events</button>
+    <button onclick="createEvent()">Create Event</button>
+    <a href="/auth/logout">Logout</a>
+    
+    <div id="events"></div>
+
+    <script>
+        async function listEvents() {
+            const response = await fetch('/api/calendar/events');
+            const data = await response.json();
+            document.getElementById('events').innerHTML = JSON.stringify(data, null, 2);
+        }
+
+        async function createEvent() {
+            const event = {
+                summary: 'Test Event',
+                description: 'This is a test event',
+                start: {
+                    dateTime: new Date(Date.now() + 3600000).toISOString(),
+                    timeZone: 'America/New_York'
+                },
+                end: {
+                    dateTime: new Date(Date.now() + 7200000).toISOString(),
+                    timeZone: 'America/New_York'
+                }
+            };
+
+            const response = await fetch('/api/calendar/events', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(event)
+            });
+            const data = await response.json();
+            alert('Event created!');
+            listEvents();
+        }
+    </script>
+</body>
+</html>
