@@ -1,18 +1,16 @@
-const express = require('express');
-const session = require('express-session');
-const cors = require('cors');
-require('dotenv').config();
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import 'dotenv/config';
 
-// Import routes
-const authRoutes = require('./routes/auth.routes');
-const appointmentRoutes = require('./routes/appointment.routes');
-const adminRoutes = require('./routes/admin.routes');
+import authRoutes from './routes/auth.routes.js';
+import appointmentRoutes from './routes/appointment.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 
 const app = express();
 
-// CORS configuration for React Native
+// CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*', // Update with your React Native app URL
+  origin: process.env.CORS_ORIGIN || '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -22,20 +20,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-  }
-}));
-
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
   res.json({
     success: true,
     message: 'Server is running',
@@ -49,7 +35,11 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+interface HttpError extends Error {
+  status?: number;
+}
+
+app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({
     success: false,
@@ -59,7 +49,7 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use((req, res) => {
+app.use((req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     error: 'Endpoint not found',
@@ -67,4 +57,4 @@ app.use((req, res) => {
   });
 });
 
-module.exports = app;
+export default app;
